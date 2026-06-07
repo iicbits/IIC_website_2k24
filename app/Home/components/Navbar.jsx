@@ -40,7 +40,7 @@ const Navbar = () => {
         <div className="bg-foreground h-full w-1/5">
           <div className="bg-neutral-700 w-full h-full rounded-b-2xl text-center text-sm font-semibold flex items-center text-white pl-12">
             <span className="h-2 w-2 rounded-full bg-green-500 mr-2"></span>
-            Inductions Open for 2k25
+            Inductions 2.0 Open for 2k25
           </div>
         </div>
         <div className="bg-foreground w-2/5 h-full rounded-tl-3xl"></div>

@@ -97,10 +97,10 @@ const IICRegistrationForm = () => {
                 Thanks for your response. We will get back to you soon. For any
                 queries, please mail us at{" "}
                 <a
-                  href="mailto:iicbits@bitsindri.ac.in"
+                  href="mailto:Ukjha2004@gmail.com"
                   className="text-orange-500 hover:underline"
                 >
-                  iicbits@bitsindri.ac.in
+                  Ukjha2004@gmail.com
                 </a>
               </p>
             ) : (
@@ -108,10 +108,10 @@ const IICRegistrationForm = () => {
                 If you want to change the details, please mail your required
                 changes at{" "}
                 <a
-                  href="mailto:iicbits@bitsindri.ac.in"
+                  href="mailto:Ukjha2004@gmail.com"
                   className="text-orange-500 hover:underline"
                 >
-                  iicbits@bitsindri.ac.in
+                  Ukjha2004@gmail.com
                 </a>
               </p>
             )}
@@ -154,10 +154,10 @@ const IICRegistrationForm = () => {
                   You have already filled the IIC registration form. If you want
                   to change the details, please mail your required changes at{" "}
                   <a
-                    href="mailto:iicbits@bitsindri.ac.in"
+                    href="mailto:Ukjha2004@gmail.com"
                     className="text-orange-500 hover:underline"
                   >
-                    iicbits@bitsindri.ac.in
+                    Ukjha2004@gmail.com
                   </a>
                 </p>
               </div>
