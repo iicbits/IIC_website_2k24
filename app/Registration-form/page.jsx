@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { registrationData } from "../action";
+import React, { useEffect, useState, useRef } from "react";
+import { registrationData, checkEmailSubmitted } from "../action";
 import { useForm } from "react-hook-form";
 
 const IICRegistrationForm = () => {
@@ -10,6 +10,7 @@ const IICRegistrationForm = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     mode: "onBlur",
   });
@@ -19,12 +20,70 @@ const IICRegistrationForm = () => {
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitStatus, setSubmitStatus] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [flashMessage, setFlashMessage] = useState("");
+  const [flashMessageType, setFlashMessageType] = useState("error");
+  const isSubmittingRef = useRef(false);
+
+  const getSubmittedEmails = () => {
+    try {
+      const saved = localStorage.getItem("iic_submitted_emails");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const saveSubmittedEmail = (email) => {
+    try {
+      if (!email) return;
+      const normalized = email.trim().toLowerCase();
+      const existing = getSubmittedEmails();
+      if (!existing.includes(normalized)) {
+        const updated = [...existing, normalized];
+        localStorage.setItem("iic_submitted_emails", JSON.stringify(updated));
+      }
+      localStorage.setItem("skjghwfjbadfbsuasf", "782478");
+    } catch (e) {
+      console.error("Error saving to localStorage:", e);
+    }
+  };
+
+  const isEmailSubmitted = (email) => {
+    if (!email) return false;
+    const normalized = email.trim().toLowerCase();
+    const existing = getSubmittedEmails();
+    return existing.includes(normalized);
+  };
+
   useEffect(() => {
     const formStatus = localStorage.getItem("skjghwfjbadfbsuasf");
     if (formStatus === "782478") {
       setIsFormAlreadySubmitted(true);
     }
   }, []);
+
+  const emailValue = watch("email");
+
+  const handleEmailBlur = async () => {
+    if (!emailValue) return;
+    const normalized = emailValue.trim().toLowerCase();
+    if (isEmailSubmitted(normalized)) {
+      setFlashMessage("You have already submitted form with this email address!");
+      setFlashMessageType("error");
+      return;
+    }
+    try {
+      const isAlreadyOnServer = await checkEmailSubmitted(normalized);
+      if (isAlreadyOnServer) {
+        saveSubmittedEmail(normalized);
+        setFlashMessage("You have already submitted form with this email address!");
+        setFlashMessageType("error");
+      }
+    } catch (err) {
+      console.error("Error checking email status on server:", err);
+    }
+  };
 
   const departments = [
     "Computer Science & Engineering",
@@ -41,16 +100,76 @@ const IICRegistrationForm = () => {
   ];
 
   const onSubmit = async (data) => {
-    console.log("Form submitted:", data);
-    localStorage.setItem("skjghwfjbadfbsuasf", "782478");
-    // Handle form submission here
-    const response = await registrationData(data);
-    console.log(response);
-    setSubmitMessage(response.message);
-    setSubmitStatus(response.status);
+    // Prevent multiple submissions if already submitting
+    if (isSubmittingRef.current || isSubmitting) {
+      console.warn("Submission already in progress. Ignoring multiple click.");
+      return;
+    }
 
-    reset();
-    setFormSubmitted(true);
+    const normalizedEmail = data.email?.trim().toLowerCase();
+
+    // Check if user already submitted with this email address (local or server)
+    if (isEmailSubmitted(normalizedEmail)) {
+      setFlashMessage("You have already submitted form with this email address!");
+      setFlashMessageType("error");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    try {
+      const isAlreadyOnServer = await checkEmailSubmitted(normalizedEmail);
+      if (isAlreadyOnServer) {
+        saveSubmittedEmail(normalizedEmail);
+        setFlashMessage("You have already submitted form with this email address!");
+        setFlashMessageType("error");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    } catch (err) {
+      console.error("Error checking server for existing email:", err);
+    }
+
+    // Synchronous lock to block double clicks
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    setFlashMessage("");
+
+    try {
+      console.log("Form submitted:", data);
+      const response = await registrationData(data);
+      console.log("Server response:", response);
+
+      if (
+        response?.status === "already_submitted" ||
+        (response?.message && response.message.toLowerCase().includes("already submitted"))
+      ) {
+        saveSubmittedEmail(normalizedEmail);
+        setFlashMessage("You have already submitted form with this email address!");
+        setFlashMessageType("error");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (response?.status === "success" || response?.status === 200) {
+        saveSubmittedEmail(normalizedEmail);
+        setSubmitMessage(response?.message || "Registration submitted successfully!");
+        setSubmitStatus("success");
+        reset();
+        setFormSubmitted(true);
+      } else {
+        setFlashMessage(response?.message || "Failed to submit form. Please check your details and try again.");
+        setFlashMessageType("error");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      setFlashMessage("An error occurred while submitting. Please try again.");
+      setFlashMessageType("error");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -97,10 +216,10 @@ const IICRegistrationForm = () => {
                 Thanks for your response. We will get back to you soon. For any
                 queries, please mail us at{" "}
                 <a
-                  href="mailto:Ukjha2004@gmail.com"
+                  href="mailto:iicbits@bitsindri.ac.in"
                   className="text-orange-500 hover:underline"
                 >
-                  Ukjha2004@gmail.com
+                  iicbits@bitsindri.ac.in
                 </a>
               </p>
             ) : (
@@ -108,10 +227,10 @@ const IICRegistrationForm = () => {
                 If you want to change the details, please mail your required
                 changes at{" "}
                 <a
-                  href="mailto:Ukjha2004@gmail.com"
+                  href="mailto:iicbits@bitsindri.ac.in"
                   className="text-orange-500 hover:underline"
                 >
-                  Ukjha2004@gmail.com
+                  iicbits@bitsindri.ac.in
                 </a>
               </p>
             )}
@@ -154,10 +273,10 @@ const IICRegistrationForm = () => {
                   You have already filled the IIC registration form. If you want
                   to change the details, please mail your required changes at{" "}
                   <a
-                    href="mailto:Ukjha2004@gmail.com"
+                    href="mailto:iicbits@bitsindri.ac.in"
                     className="text-orange-500 hover:underline"
                   >
-                    Ukjha2004@gmail.com
+                    iicbits@bitsindri.ac.in
                   </a>
                 </p>
               </div>
@@ -166,7 +285,48 @@ const IICRegistrationForm = () => {
             // Registration form
 
             <div className="bg-white shadow-xl rounded-2xl p-8 md:p-10">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              {/* Flash Message Banner */}
+              {flashMessage && (
+                <div
+                  className={`mb-6 p-4 rounded-xl shadow-sm flex items-center justify-between transition-all duration-300 ${
+                    flashMessageType === "error"
+                      ? "bg-red-50 border-l-4 border-red-500 text-red-700"
+                      : "bg-amber-50 border-l-4 border-amber-500 text-amber-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="w-6 h-6 flex-shrink-0 text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="font-semibold text-base">{flashMessage}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFlashMessage("")}
+                    className="text-gray-400 hover:text-gray-600 font-bold ml-4 p-1 transition-colors"
+                    aria-label="Close notification"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              <form
+                method="POST"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit(onSubmit)(e);
+                }}
+                className="space-y-8"
+              >
                 {/* Basic Information */}
                 <div className="space-y-6">
                   <h2 className="text-2xl font-semibold text-gray-900 border-b border-orange-100 pb-2">
@@ -186,6 +346,7 @@ const IICRegistrationForm = () => {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                             message: "Please enter a valid email address",
                           },
+                          onBlur: handleEmailBlur,
                         })}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors ${
                           errors.email ? "border-red-500" : "border-gray-300"
@@ -474,9 +635,40 @@ const IICRegistrationForm = () => {
                 <div className="pt-6">
                   <button
                     type="submit"
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-8 rounded-lg duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-transform"
+                    disabled={isSubmitting}
+                    className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 ${
+                      isSubmitting
+                        ? "opacity-75 cursor-not-allowed bg-orange-400 hover:bg-orange-400"
+                        : "transform hover:-translate-y-0.5"
+                    }`}
                   >
-                    Submit Registration
+                    {isSubmitting ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      "Submit Registration"
+                    )}
                   </button>
                   <p className="text-sm text-gray-500 text-center mt-3">
                     Please ensure all required fields are filled before
