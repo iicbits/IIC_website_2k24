@@ -40,7 +40,7 @@ const Navbar = () => {
         <div className="bg-foreground h-full w-1/5">
           <div className="bg-neutral-700 w-full h-full rounded-b-2xl text-center text-sm font-semibold flex items-center text-white pl-12">
             <span className="h-2 w-2 rounded-full bg-green-500 mr-2"></span>
-            Inductions 2.0 Open for 2k25
+            Inductions Open for 2k26
           </div>
         </div>
         <div className="bg-foreground w-2/5 h-full rounded-tl-3xl"></div>
@@ -79,11 +79,10 @@ const Navbar = () => {
             <Link
               key={index}
               href={item.href}
-              className={`transition-all duration-300 ${
-                activeItem === item.name
+              className={`transition-all duration-300 ${activeItem === item.name
                   ? "text-orange-500 border-b border-orange-500"
                   : "hover:text-accent border-b border-transparent hover:border-accent"
-              }`}
+                }`}
             >
               {item.name}
             </Link>
@@ -100,11 +99,10 @@ const Navbar = () => {
           </Link>
           <Link
             href="/Contact"
-            className={`hidden md:block px-4 py-2 border-2 border-neutral-700 rounded-full text-sm transition-colors duration-300 ${
-              activeItem === "Contact"
+            className={`hidden md:block px-4 py-2 border-2 border-neutral-700 rounded-full text-sm transition-colors duration-300 ${activeItem === "Contact"
                 ? "text-orange-500 bg-orange-100 border-orange-500"
                 : "text-white bg-neutral-600 hover:bg-neutral-500"
-            }`}
+              }`}
           >
             Contact
           </Link>
@@ -117,27 +115,23 @@ const Navbar = () => {
           aria-label="Toggle menu"
         >
           <span
-            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${
-              isMenuOpen ? "rotate-45 translate-y-1.5" : ""
-            }`}
+            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""
+              }`}
           ></span>
           <span
-            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${
-              isMenuOpen ? "opacity-0" : ""
-            }`}
+            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${isMenuOpen ? "opacity-0" : ""
+              }`}
           ></span>
           <span
-            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${
-              isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
-            }`}
+            className={`block w-6 h-0.5 bg-secondary transition-all duration-300 ${isMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
+              }`}
           ></span>
         </button>
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden absolute z-50 top-full left-0 right-0 bg-foreground transition-all duration-300 overflow-hidden ${
-            isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden absolute z-50 top-full left-0 right-0 bg-foreground transition-all duration-300 overflow-hidden ${isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <nav className="flex flex-col justify-center items-center py-4">
             {navItems.map((item, index) => (
@@ -145,11 +139,10 @@ const Navbar = () => {
                 key={index}
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
-                className={`px-8 py-3 text-secondary transition-all duration-300 ${
-                  activeItem === item.name
+                className={`px-8 py-3 text-secondary transition-all duration-300 ${activeItem === item.name
                     ? "text-orange-500"
                     : "hover:text-accent hover:bg-neutral-800"
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
